@@ -1,0 +1,45 @@
+Updated useSmartTitle Hook (with expiration)
+
+const useSmartTitle = () => {
+  const [title, setTitle] = React.useState<string>("Loading...");
+  const TTL = 5 * 60 * 1000; // 5 minutes
+
+  React.useEffect(() => {
+    const cached = localStorage.getItem("title");
+    const timestamp = localStorage.getItem("title_timestamp");
+    const isFresh = timestamp && (Date.now() - parseInt(timestamp)) < TTL;
+
+    if (cached) {
+      setTitle(cached); // Show cached value right away
+    }
+
+    if (!isFresh) {
+      // Fetch fresh data in background
+      fetchLatestTitle().then((latest) => {
+        if (latest && latest !== cached) {
+          localStorage.setItem("title", latest);
+          localStorage.setItem("title_timestamp", Date.now().toString());
+          setTitle(latest); // Update UI
+        }
+      });
+    }
+  }, []);
+
+  return title;
+};
+
+Service Fetch Function (same as before)
+
+const fetchLatestTitle = async (): Promise<string> => {
+  const response = await fetch("https://yourapi.com/get-title");
+  const data = await response.json();
+  return data.title || "Default title";
+};
+
+React Component
+
+const MyComponent = () => {
+  const title = useSmartTitle();
+
+  return <label>{title}</label>;
+};
