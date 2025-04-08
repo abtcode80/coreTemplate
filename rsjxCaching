@@ -1,0 +1,24 @@
+ What RxJS Brings to SPFx:
+Feature	Benefit in SPFx context
+Observables	Efficient data streaming & change tracking
+Operators (e.g. map, filter)	Data transformation pipelines
+Subjects / BehaviorSubject	Easy reactive state management (like a mini-Redux)
+shareReplay	✨ Super useful for caching API results
+Debounce/Throttle	Useful for search/filtering or live inputs
+
+import { from, Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
+import { sp } from "@pnp/sp/presets/all";
+
+class UserService {
+  private currentUser$: Observable<any>;
+
+  public getCurrentUser(): Observable<any> {
+    if (!this.currentUser$) {
+      this.currentUser$ = from(sp.web.currentUser.get()).pipe(
+        shareReplay(1) // ✅ caches the result
+      );
+    }
+    return this.currentUser$;
+  }
+}
