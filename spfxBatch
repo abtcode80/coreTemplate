@@ -1,0 +1,17 @@
+Non blocking loop with batch
+
+import { sp } from "@pnp/sp/presets/all";
+
+const batch = sp.web.createBatch();
+const promises = [];
+
+for (let i = 0; i < 100; i++) {
+  const promise = sp.profiles.getPropertiesFor(`i:0#.f|membership|user${i}@domain.com`).inBatch(batch);
+  promises.push(promise);
+}
+
+batch.execute().then(() => {
+  Promise.all(promises).then(results => {
+    console.log("All user profiles via batch", results);
+  });
+});
